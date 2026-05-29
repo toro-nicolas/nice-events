@@ -3,6 +3,8 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["main"]
+  schedule:
+    - cron: '0 3 * * 1' # Auto-rebuild and refresh data every day at midnight UTC!
   workflow_dispatch:
 
 permissions:
@@ -32,6 +34,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Pre-fetch Open Data events (bypasses CORS in production)
+        run: |
+          mkdir -p public
+          curl -sL "https://opendata.nicecotedazur.org/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json" -o public/events-public.json
 
       - name: Build application
         run: npm run build

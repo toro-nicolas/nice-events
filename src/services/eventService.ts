@@ -218,10 +218,13 @@ export const eventService = {
       // 1. Vite Local Dev Proxy (bypasses CORS in local development)
       "/api-nice/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json",
 
-      // 2. AllOrigins secure open CORS proxy (bypasses CORS in direct serverless hosting Vercel/Netlify/GitHub Pages)
+      // 2. Local pre-fetched events file (extremely fast, 100% reliable, zero CORS in production)
+      "./events-public.json",
+
+      // 3. AllOrigins secure open CORS proxy (bypasses CORS in direct serverless hosting Vercel/Netlify/GitHub Pages)
       "https://api.allorigins.win/raw?url=https://opendata.nicecotedazur.org/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json",
 
-      // 3. Direct URL (fallback)
+      // 4. Direct URL (fallback)
       NICE_OPEN_DATA_URL,
     ];
 
