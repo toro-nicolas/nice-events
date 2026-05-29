@@ -1,0 +1,20 @@
+{
+  "singleQuote": false,
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "semi": true,
+  "printWidth": 80,
+  "quoteProps": "as-needed",
+  "overrides": [
+    {
+      "files": "{apps,packages}/**/*.ts{,x}",
+      "options": {
+        "tabWidth": 4
+      }
+    }
+  ]
+}
