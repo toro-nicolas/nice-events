@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Brand Gradient for Border and Accents -->
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" /> <!-- Cyan 500 -->
+      <stop offset="50%" stop-color="#6366f1" /> <!-- Indigo 500 -->
+      <stop offset="100%" stop-color="#8b5cf6" /> <!-- Violet 500 -->
+    </linearGradient>
+
+    <!-- Calendar Outline Gradient (Bright, crisp white-silver) -->
+    <linearGradient id="calGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e2e8f0" /> <!-- slate-200 -->
+    </linearGradient>
+
+    <!-- Glowing effect for neon sparkles and active day elements -->
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Premium drop shadow and glow for the squircle backdrop -->
+    <filter id="bgShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.6" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#06b6d4" flood-opacity="0.2" />
+    </filter>
+  </defs>
+
+  <!-- Deep dark premium squircle background (slate-950 like) with border and shadows -->
+  <g filter="url(#bgShadow)">
+    <rect x="28" y="28" width="456" height="456" rx="114" fill="#030712" />
+    <rect x="28" y="28" width="456" height="456" rx="114" fill="none" stroke="url(#brandGrad)" stroke-width="16" />
+  </g>
+
+  <!-- Stylized premium Calendar icon in the center -->
+  <g transform="translate(40, 40)">
+    <!-- Calendar Outer Frame -->
+    <rect x="96" y="112" width="240" height="224" rx="28" fill="none" stroke="url(#calGrad)" stroke-width="20" stroke-linejoin="round" />
+    
+    <!-- Top binder loops -->
+    <path d="M156 80 v48 M276 80 v48" stroke="url(#calGrad)" stroke-width="24" stroke-linecap="round" />
+    
+    <!-- Header horizontal line -->
+    <path d="M96 176 h240" stroke="url(#calGrad)" stroke-width="16" stroke-linecap="round" />
+    
+    <!-- Grid elements (days) -->
+    <!-- Row 1 -->
+    <rect x="136" y="216" width="20" height="20" rx="6" fill="#06b6d4" /> <!-- Active / Cyan day dot -->
+    <rect x="206" y="216" width="20" height="20" rx="6" fill="#cbd5e1" />
+    <rect x="276" y="216" width="20" height="20" rx="6" fill="#cbd5e1" />
+    
+    <!-- Row 2 -->
+    <rect x="136" y="276" width="20" height="20" rx="6" fill="#cbd5e1" />
+    <rect x="206" y="276" width="20" height="20" rx="6" fill="#cbd5e1" />
+    <!-- Row 2 Col 3 is empty for the magical sparkle! -->
+
+    <!-- Dynamic Neon Sparkles (representing Nice Events magic!) -->
+    <!-- Big Golden Sparkle overlapping the bottom right corner of the calendar -->
+    <path d="M 286 246 Q 286 286 326 286 Q 286 286 286 326 Q 286 286 246 286 Q 286 286 286 246 Z" 
+          fill="#fde047" filter="url(#neonGlow)" />
+          
+    <!-- Small Cyan Sparkle floating beautifully in the top-right -->
+    <path d="M 330 186 Q 330 206 350 206 Q 330 206 330 226 Q 330 206 310 206 Q 330 206 330 186 Z" 
+          fill="#06b6d4" filter="url(#neonGlow)" />
+  </g>
+</svg>
