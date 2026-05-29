@@ -214,19 +214,21 @@ export const eventService = {
     }
 
     // 2. Redundant URLs cascade to solve browser CORS blocking for Open Data
-    const urlsToTry = [
-      // 1. Vite Local Dev Proxy (bypasses CORS in local development)
-      "/api-nice/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json",
+    const urlsToTry: string[] = [];
 
-      // 2. Local pre-fetched events file (extremely fast, 100% reliable, zero CORS in production)
-      "./events-public.json",
+    if (import.meta.env.DEV) {
+      // 1. Vite Local Dev Proxy (only used and requested in local development)
+      urlsToTry.push("/api-nice/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json");
+    }
 
-      // 3. AllOrigins secure open CORS proxy (bypasses CORS in direct serverless hosting Vercel/Netlify/GitHub Pages)
-      "https://api.allorigins.win/raw?url=https://opendata.nicecotedazur.org/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json",
+    // 2. Local pre-fetched events file (extremely fast, 100% reliable, zero CORS in production)
+    urlsToTry.push("./events-public.json");
 
-      // 4. Direct URL (fallback)
-      NICE_OPEN_DATA_URL,
-    ];
+    // 3. AllOrigins secure open CORS proxy (bypasses CORS in direct serverless hosting Vercel/Netlify/GitHub Pages)
+    urlsToTry.push("https://api.allorigins.win/raw?url=https://opendata.nicecotedazur.org/data/storage/f/2026-05-09T06:06:01.384Z/events-public.json");
+
+    // 4. Direct URL (fallback)
+    urlsToTry.push(NICE_OPEN_DATA_URL);
 
     for (const url of urlsToTry) {
       try {
@@ -305,20 +307,150 @@ export const eventService = {
               ? rawImageUrl.replace("http://", "https://")
               : rawImageUrl;
 
-            // Extract Category
+            // Extract Category using a high-fidelity matching cascade
             let category = "Spectacle";
-            if (item.type === "FETE_ET_MANIFESTATION") {
-              category = "Festival";
-            } else if (
-              lowercaseTitle.includes("match") ||
-              lowercaseTitle.includes("sport")
-            ) {
-              category = "Sport";
-            } else if (
-              lowercaseTitle.includes("concert") ||
-              lowercaseTitle.includes("tour")
-            ) {
-              category = "Concert";
+            
+            // 1. Inspect typesManifestation from Open Data API
+            const typesManifestation = item.informationsFeteEtManifestation?.typesManifestation || [];
+            let foundCategory = false;
+            for (const t of typesManifestation) {
+              const lib = (t.libelleFr || "").toLowerCase();
+              if (lib.includes("sport")) {
+                category = "Sport";
+                foundCategory = true;
+                break;
+              }
+              if (lib.includes("musique") || lib.includes("concert")) {
+                category = "Concert";
+                foundCategory = true;
+                break;
+              }
+            }
+
+            // 2. Inspect category classifications from Open Data API
+            if (!foundCategory) {
+              const apiCategories = item.informationsFeteEtManifestation?.categories || [];
+              for (const c of apiCategories) {
+                const lib = (c.libelleFr || "").toLowerCase();
+                if (lib.includes("concert") || lib.includes("musique") || lib.includes("opéra")) {
+                  category = "Concert";
+                  foundCategory = true;
+                  break;
+                }
+                if (lib.includes("one man") || lib.includes("humour") || lib.includes("comédie")) {
+                  if (lib.includes("comédie musicale")) {
+                    category = "Spectacle";
+                  } else {
+                    category = "Humour";
+                  }
+                  foundCategory = true;
+                  break;
+                }
+                if (lib.includes("sport") || lib.includes("compétition")) {
+                  category = "Sport";
+                  foundCategory = true;
+                  break;
+                }
+                if (lib.includes("festival") || lib.includes("carnaval") || lib.includes("fête traditionnelle")) {
+                  category = "Festival";
+                  foundCategory = true;
+                  break;
+                }
+                if (
+                  lib.includes("théâtre") ||
+                  lib.includes("spectacle") ||
+                  lib.includes("exposition") ||
+                  lib.includes("conférence") ||
+                  lib.includes("son et lumière")
+                ) {
+                  category = "Spectacle";
+                  foundCategory = true;
+                  break;
+                }
+              }
+            }
+
+            // 3. Fallback on keyword analysis in title and description
+            if (!foundCategory) {
+              const lowercaseDesc = (item.presentation?.descriptifCourt?.libelleFr || "").toLowerCase();
+              const lowercaseDetailedDesc = (item.presentation?.descriptifDetaille?.libelleFr || "").toLowerCase();
+              const text = `${lowercaseTitle} ${lowercaseDesc} ${lowercaseDetailedDesc}`;
+
+              if (
+                text.includes("match") ||
+                text.includes("sport") ||
+                text.includes("marathon") ||
+                text.includes("ironman") ||
+                text.includes("utmb") ||
+                text.includes("triathlon") ||
+                text.includes("football") ||
+                text.includes("ogc nice") ||
+                text.includes("course à pied") ||
+                text.includes("running") ||
+                text.includes("trail") ||
+                text.includes("yoga") ||
+                text.includes("randonnée") ||
+                text.includes("vélo") ||
+                text.includes("cyclisme")
+              ) {
+                category = "Sport";
+              } else if (
+                text.includes("concert") ||
+                text.includes("musique") ||
+                text.includes("récital") ||
+                text.includes("jazz") ||
+                text.includes("symphonique") ||
+                text.includes("opéra") ||
+                text.includes("tournée") ||
+                text.includes("tour") ||
+                text.includes("live") ||
+                text.includes("rock") ||
+                text.includes("pop") ||
+                text.includes("chanteur") ||
+                text.includes("chanteuse") ||
+                text.includes("orchestre") ||
+                text.includes("musical")
+              ) {
+                category = "Concert";
+              } else if (
+                text.includes("humour") ||
+                text.includes("one man") ||
+                text.includes("one-man") ||
+                text.includes("one woman") ||
+                text.includes("one-woman") ||
+                text.includes("comédien") ||
+                text.includes("comique") ||
+                text.includes("stand up") ||
+                text.includes("stand-up") ||
+                text.includes("panacloc")
+              ) {
+                category = "Humour";
+              } else if (
+                text.includes("festival") ||
+                text.includes("fête des") ||
+                text.includes("carnaval") ||
+                text.includes("foire") ||
+                text.includes("salon") ||
+                text.includes("braderie") ||
+                text.includes("marché")
+              ) {
+                category = "Festival";
+              } else if (
+                text.includes("spectacle") ||
+                text.includes("théâtre") ||
+                text.includes("danse") ||
+                text.includes("ballet") ||
+                text.includes("cirque") ||
+                text.includes("cabaret") ||
+                text.includes("cinéma") ||
+                text.includes("projection") ||
+                text.includes("exposition") ||
+                text.includes("expo")
+              ) {
+                category = "Spectacle";
+              } else {
+                category = "Spectacle";
+              }
             }
 
             // Extract Times dynamically from timeFrames in the API or fallback on stable varied hashing
