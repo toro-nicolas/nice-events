@@ -208,25 +208,9 @@ export const eventService = {
       }
     } catch (err) {
       console.warn(
-        "[NiceEvents] Failed to fetch OGC Nice matches from ESPN. Falling back to local static JSON.",
+        "[NiceEvents] Failed to fetch OGC Nice matches from ESPN.",
         err
       );
-      
-      // Triple-Resilient local fallback cascade
-      try {
-        const matchResponse = await fetch("/ogc-nice-matches.json");
-        if (matchResponse.ok) {
-          localMatches = await matchResponse.json();
-          console.log(
-            `[NiceEvents] Successfully loaded ${localMatches.length} fallback OGC Nice matches dynamically from local JSON.`
-          );
-        }
-      } catch (localErr) {
-        console.error(
-          "[NiceEvents] Failed to load local matches fallback JSON.",
-          localErr
-        );
-      }
     }
 
     // 2. Redundant URLs cascade to solve browser CORS blocking for Open Data
